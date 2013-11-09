@@ -11,18 +11,22 @@
 #endif /* __PROGTEST__ */
 
 typedef struct TDateTime {
-    int i, h, d, m;
-    long long int y;
+    int i, h, d, m, y;
 } TDATETIME;
 
-int isLeapYear(long long int year) {
+typedef struct TDayTime {
+    int i, h;
+    long long int d;
+} TDAYTIME;
+
+int isLeapYear(int year) {
     if (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0) && year % 4000 != 0) {
         return 1;
     }
     return 0;
 }
 
-int daysInMonth(int month, long long int year) {
+int daysInMonth(int month, int year) {
     int days;
     switch (month) {
         case 0: days = 0;
@@ -102,7 +106,7 @@ int leapYearsInInterval(const TDATETIME * date1, const TDATETIME * date2) {
     start = ((date2->y / 4000) - 1)*4000;
 
     for (i = date1->y; i < limit; i++) {
-        count1 +=isLeapYear(i);
+        count1 += isLeapYear(i);
     }
 
     blockCount = start / 4000 - limit / 4000;
@@ -128,20 +132,52 @@ long long int daysInInterval(const TDATETIME * date1, const TDATETIME * date2) {
 }
 
 void incDate(TDATETIME * date) {
-    if(date->i < 59) {
-        date->i++;
-    } else if (date->h < 23) {
-        date->i = 0;
+    date->i++;
+    if (!dateIsValid(date)) {
+        date->i--;
         date->h++;
-    } else {
-        date->i = 0;
-        date->h = 0;
     }
+    if (!dateIsValid(date)) {
+        date->h--;
+        date->d++;
+    }
+    if (!dateIsValid(date)) {
+        date->d--;
+        date->m++;
+    }
+    if (!dateIsValid(date)) {
+        date->m--;
+        date->y++;
+    }
+
+}
+
+int isCockooTime(const TDATETIME * date) {
+    if (date->m == 30) return 1;
+    if (date->m == 0) return date->h;
+    return 0;
 }
 
 int cuckooClock(int y1, int m1, int d1, int h1, int i1,
         int y2, int m2, int d2, int h2, int i2,
         long long int * cuckoo) {
+    TDATETIME * date1, * date2;
+    date1->y = y1;
+    date1->m = m1;
+    date1->d = d1;
+    date1->h = h1;
+    date1->i = i1;
+
+    date2->y = y2;
+    date2->m = m2;
+    date2->d = d2;
+    date2->h = h2;
+    date2->i = i2;
+
+    if (!dateIsValid(date1) || !dateIsValid(date2) || comparator(date1, date2) <= 0)
+        return 0;
+    
+    
     return 1;
 }
 
