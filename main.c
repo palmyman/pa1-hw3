@@ -90,44 +90,61 @@ int dayNumber(const TDATETIME * date) {
     return number;
 }
 
-int leapYearsInInterval(const TDATETIME * date) {
+int leapYearsInInterval(const TDATETIME * date1, const TDATETIME * date2) {
     long long int count1 = 0, count2 = 0, count3 = 0, limit, start, blockCount;
     int count = 0;
     int i;
 
-    if (date->y - 1600 < 4000) {
-        for (i = 1600; i < date->y; i++) {
+    if (date2->y - date1->y < 4000) {
+        for (i = date1->y; i < date2->y; i++) {
             count += isLeapYear(i);
         }
         return count;
     }
 
-    limit = ((1600 / 4000) + 1)*4000;
-    start = ((date->y / 4000) - 1)*4000;
+    limit = ((date1->y / 4000) + 1)*4000;
+    start = ((date2->y / 4000) - 1)*4000;
 
-    for (i = 1600; i < limit; i++) {
-        count1 += isLeapYear(i);
+    for (i = date1->y; i < limit; i++) {
+        count1 +=isLeapYear(i);
     }
 
     blockCount = start / 4000 - limit / 4000;
     count2 = blockCount * 969;
 
-    for (i = start; i < date->y; i++) {
+    for (i = start; i < date2->y; i++) {
         count3 += isLeapYear(i);
     }
 
     return count1 + count2 + count3;
 }
 
-int comparator(const TDAYTIME * date1, const TDAYTIME * date2) {
+int dateComparator(const TDATETIME * date1, const TDATETIME * date2) {
+    if (date1->y != date2->y) return (date1->y - date2->y);
+    if (date1->m != date2->m) return (date1->m - date2->m);
     if (date1->d != date2->d) return (date1->d - date2->d);
     if (date1->h != date2->h) return (date1->h - date2->h);
     return (date1->i - date2->i);
 }
 
-TDAYTIME convertForm(const TDATETIME * date) {
+int timeComparator(const TDAYTIME * date1, const TDAYTIME * date2) {
+    if (date1->d != date2->d) return (date1->d - date2->d);
+    if (date1->h != date2->h) return (date1->h - date2->h);
+    return (date1->i - date2->i);
+}
+
+TDAYTIME convertDate2(const TDATETIME * date1, const TDATETIME * date2) {
     TDAYTIME time;
-    time.d = (date->y - 1600) * 365 + dayNumber(date) + leapYearsInInterval(date);
+    long long int years = date2->y - date1->y;        
+    time.d = years * 365 + dayNumber(date2) - dayNumber(date1) + leapYearsInInterval(date1, date2);
+    time.h = date2->h;
+    time.i = date2->i;
+    return time;
+}
+
+TDAYTIME convertDate1(const TDATETIME * date) {
+    TDAYTIME time;    
+    time.d = 0;
     time.h = date->h;
     time.i = date->i;
     return time;
@@ -177,23 +194,23 @@ int cuckooClock(int y1, int m1, int d1, int h1, int i1,
         printf("Invalid date!!\n");
         return 0;
     }
-
-    TDAYTIME time1, time2;
-    time1 = convertForm(&date1);
-    time2 = convertForm(&date2);
-
-    if (comparator(&time1, &time2) > 0) {
+    
+    if (dateComparator(&date1, &date2) > 0) {
         printf("Date1 later than date2!!\n");
         return 0;
     }
-    
+
+    TDAYTIME time1, time2;
+    time1 = convertDate1(&date1);
+    time2 = convertDate2(&date1, &date2);
+
     * cuckoo = 0;
     if (time1.d < time2.d - 1) {
         * cuckoo += ((time2.d - time1.d - 1) * 180);
         time1.d = time2.d - 1;
     }
 
-    while (comparator(&time1, &time2) <= 0) {
+    while (timeComparator(&time1, &time2) <= 0) {
         * cuckoo += isCuckooTime(&time1);
         incTime(&time1);
     }
@@ -208,6 +225,9 @@ int cuckooClock(int y1, int m1, int d1, int h1, int i1,
 int main(int argc, char** argv) {
     long long int cuckoo;
     int res;
+    
+    res = cuckooClock(1967, 5, 25, 17, 13, 2025998317, 9, 12, 10, 30, &cuckoo);
+    /* res = 1, cuckoo = 133196303785636 */
 
     res = cuckooClock(2013, 10, 1, 13, 15,
             2013, 10, 1, 18, 45, &cuckoo);
@@ -255,10 +275,12 @@ int main(int argc, char** argv) {
 
     res = cuckooClock(2400, 2, 29, 12, 0,
             2400, 2, 29, 12, 0, &cuckoo);
-    
+
     res = cuckooClock(2400, 2, 29, 0, 0,
             2400, 2, 29, 23, 59, &cuckoo);
-    /* res = 1, cuckoo = ?? */
+    /* res = 1, cuckoo = 180 */
+
+
     return (EXIT_SUCCESS);
 }
 #endif /* __PROGTEST__ */
