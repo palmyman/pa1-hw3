@@ -127,8 +127,12 @@ int comparator(const TDATETIME * date1, const TDATETIME * date2) {
     return (date1->i - date2->i);
 }
 
-long long int daysInInterval(const TDATETIME * date1, const TDATETIME * date2) {
-    return (date2->y - date1->y) * 365 + dayNumber(date2) - dayNumber(date1) + leapYearsInInterval(date1, date2);
+TDAYTIME convertForm(const TDATETIME * date) {
+    TDAYTIME newDate;
+    newDate.d = (date->y - 1600) * 365 + dayNumber(date) - 1 + leapYearsInInterval(1600, date);
+    newDate.h = date->h;
+    newDate.i = date->i;c
+    return newDate;
 }
 
 void incDate(TDATETIME * date) {
