@@ -135,25 +135,17 @@ TDAYTIME convertForm(const TDATETIME * date) {
     return newDate;
 }
 
-void incDate(TDATETIME * date) {
-    date->i++;
-    if (!dateIsValid(date)) {
-        date->i--;
+void incDate(TDAYTIME * date) {
+    if(date->i < 59) {
+        date->i++;
+    } else if (date->h < 23) {
+        date->i = 0;
         date->h++;
-    }
-    if (!dateIsValid(date)) {
-        date->h--;
+    } else {
+        date->i = 0;
+        date->h = 0;
         date->d++;
     }
-    if (!dateIsValid(date)) {
-        date->d--;
-        date->m++;
-    }
-    if (!dateIsValid(date)) {
-        date->m--;
-        date->y++;
-    }
-
 }
 
 int isCockooTime(const TDATETIME * date) {
