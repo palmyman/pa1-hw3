@@ -131,7 +131,7 @@ TDAYTIME convertForm(const TDATETIME * date) {
     TDAYTIME newDate;
     newDate.d = (date->y - 1600) * 365 + dayNumber(date) - 1 + leapYearsInInterval(1600, date);
     newDate.h = date->h;
-    newDate.i = date->i;c
+    newDate.i = date->i;
     return newDate;
 }
 
