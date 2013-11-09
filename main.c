@@ -188,8 +188,8 @@ int cuckooClock(int y1, int m1, int d1, int h1, int i1,
     }
     
     * cuckoo = 0;
-    if (0) {
-        * cuckoo += ((time2.d - time1.d - 1) * 90);
+    if (time1.d < time2.d - 1) {
+        * cuckoo += ((time2.d - time1.d - 1) * 180);
         time1.d = time2.d - 1;
     }
 
@@ -255,7 +255,10 @@ int main(int argc, char** argv) {
 
     res = cuckooClock(2400, 2, 29, 12, 0,
             2400, 2, 29, 12, 0, &cuckoo);
-    /* res = 1, cuckoo = 12 */
+    
+    res = cuckooClock(2400, 2, 29, 0, 0,
+            2400, 2, 29, 23, 59, &cuckoo);
+    /* res = 1, cuckoo = ?? */
     return (EXIT_SUCCESS);
 }
 #endif /* __PROGTEST__ */
